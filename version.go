@@ -1,4 +1,4 @@
-package gswat
+package gsm
 
 import (
 	"fmt"

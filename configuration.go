@@ -1,4 +1,4 @@
-package gswat
+package gsm
 
 import (
 	"flag"
@@ -18,7 +18,7 @@ var (
 
 func NewConfigurationFromFlags() *Configuration {
 	flag.Usage = func() {
-		fmt.Println("Usage: gswat-server [options]")
+		fmt.Println("Usage: gsm-server [options]")
 		printOptions()
 	}
 	flag.Parse()

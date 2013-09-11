@@ -2,24 +2,24 @@ package main
 
 import (
 	"fmt"
-	"gswat"
+	"gsm"
 	"os"
 )
 
 func main() {
-	config := gswat.NewConfigurationFromFlags()
+	config := gsm.NewConfigurationFromFlags()
 
 	if config.DisplayVersion {
-		fmt.Println(gswat.ProgVersion())
+		fmt.Println(gsm.ProgVersion())
 	}
 
 	if config.DisplayRev {
-		fmt.Println(gswat.Rev)
+		fmt.Println(gsm.Rev)
 	}
 
 	if config.ExitImmediately {
 		os.Exit(1)
 	}
 
-	gswat.Serve()
+	gsm.Serve()
 }
