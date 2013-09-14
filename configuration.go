@@ -10,6 +10,7 @@ type Configuration struct {
 	DisplayRev      bool
 	ExitImmediately bool
 	UriFlag         string
+	GemDir          string
 }
 
 var (
@@ -20,18 +21,28 @@ var (
 
 func NewConfigurationFromFlags() *Configuration {
 	flag.Usage = func() {
-		fmt.Println("Usage: gsm-server [options]")
+		fmt.Println("Usage: gsm-server [options] <gemdir>")
 		printOptions()
 	}
 	flag.Parse()
 
+	var gemDir string
+
 	exitImmediately := *revFlag || *versionFlag
+
+	if flag.NArg() < 1 {
+		gemDir = ""
+		exitImmediately = true
+	} else {
+		gemDir = flag.Arg(0)
+	}
 
 	return &Configuration{
 		DisplayVersion:  *versionFlag,
 		DisplayRev:      *revFlag,
 		ExitImmediately: exitImmediately,
 		UriFlag:         *uriFlag,
+		GemDir:          gemDir,
 	}
 }
 
