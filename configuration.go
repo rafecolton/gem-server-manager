@@ -9,11 +9,13 @@ type Configuration struct {
 	DisplayVersion  bool
 	DisplayRev      bool
 	ExitImmediately bool
+	UriFlag         string
 }
 
 var (
-	revFlag     = flag.Bool("rev", false, "-rev\tPrint git revision and exit.")
+	revFlag     = flag.Bool("rev", false, "-rev\t\tPrint git revision and exit.")
 	versionFlag = flag.Bool("version", false, "-version\tPrint version and exit.")
+	uriFlag     = flag.String("uri", "amqp://guest:guest@localhost:5672", "-uri\t\tAMQP uri for consumer.")
 )
 
 func NewConfigurationFromFlags() *Configuration {
@@ -29,6 +31,7 @@ func NewConfigurationFromFlags() *Configuration {
 		DisplayVersion:  *versionFlag,
 		DisplayRev:      *revFlag,
 		ExitImmediately: exitImmediately,
+		UriFlag:         *uriFlag,
 	}
 }
 

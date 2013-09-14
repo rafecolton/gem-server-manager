@@ -8,6 +8,10 @@ import (
 	"os"
 )
 
+import (
+	"github.com/streadway/amqp"
+)
+
 var (
 	done   = make(chan bool)
 	logger gsmlog.GsmLogger
@@ -33,5 +37,24 @@ func main() {
 		os.Exit(1)
 	}
 
-	gsm.Serve()
+	deliveries := make(chan interface{})
+
+	go gsm.Consume(config.UriFlag, deliveries, logger)
+
+	go func() {
+		for delivery := range deliveries {
+			switch delivery.(type) {
+			case nil:
+				done <- true
+			case error:
+				logger.Println("something bad happened")
+			default:
+				instructions := gsm.Orchestrate(delivery.(amqp.Delivery))
+				gsm.ProcessInstructions(instructions)
+				logger.Printf("raw_instructions: %+v\n", instructions)
+			}
+		}
+	}()
+
+	<-done
 }
