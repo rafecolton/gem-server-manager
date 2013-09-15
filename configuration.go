@@ -3,14 +3,16 @@ package gsm
 import (
 	"flag"
 	"fmt"
+	gsmlog "gsm/log"
 )
 
 type Configuration struct {
-	DisplayVersion  bool
-	DisplayRev      bool
-	ExitImmediately bool
-	UriFlag         string
-	GemDir          string
+	DisplayVersion   bool
+	DisplayRev       bool
+	ExitImmediately  bool
+	ConnectionString string
+	GemDir           string
+	Logger           gsmlog.GsmLogger
 }
 
 var (
@@ -19,7 +21,7 @@ var (
 	uriFlag     = flag.String("uri", "amqp://guest:guest@localhost:5672", "-uri\t\tAMQP uri for consumer.")
 )
 
-func NewConfigurationFromFlags() *Configuration {
+func NewConfigurationFromFlags(logger gsmlog.GsmLogger) *Configuration {
 	flag.Usage = func() {
 		fmt.Println("Usage: gsm-server [options] <gemdir>")
 		printOptions()
@@ -38,11 +40,12 @@ func NewConfigurationFromFlags() *Configuration {
 	}
 
 	return &Configuration{
-		DisplayVersion:  *versionFlag,
-		DisplayRev:      *revFlag,
-		ExitImmediately: exitImmediately,
-		UriFlag:         *uriFlag,
-		GemDir:          gemDir,
+		DisplayVersion:   *versionFlag,
+		DisplayRev:       *revFlag,
+		ExitImmediately:  exitImmediately,
+		ConnectionString: *uriFlag,
+		GemDir:           gemDir,
+		Logger:           logger,
 	}
 }
 

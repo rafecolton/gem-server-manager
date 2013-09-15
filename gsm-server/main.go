@@ -22,7 +22,7 @@ func init() {
 }
 
 func main() {
-	config := gsm.NewConfigurationFromFlags()
+	config := gsm.NewConfigurationFromFlags(logger)
 	logger.Initialize()
 
 	if config.DisplayVersion {
@@ -38,8 +38,9 @@ func main() {
 	}
 
 	deliveries := make(chan interface{})
+	consumer := gsm.NewConsumer(*config)
 
-	go gsm.Consume(config.UriFlag, deliveries, logger)
+	go consumer.Consume(deliveries)
 
 	go func() {
 		for delivery := range deliveries {
