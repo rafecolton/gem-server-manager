@@ -50,7 +50,7 @@ func main() {
 			case error:
 				logger.Println("something bad happened")
 			default:
-				instructions := gsm.Orchestrate(delivery.(amqp.Delivery))
+				instructions := gsm.Orchestrate(delivery.(amqp.Delivery), logger)
 				gsm.ProcessInstructions(instructions)
 				logger.Printf("raw_instructions: %+v\n", instructions)
 			}

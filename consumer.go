@@ -1,9 +1,9 @@
 package gsm
 
 import (
-	gsmlog "gsm/log"
 	"os"
 	"os/exec"
+	"sync"
 )
 
 import (
@@ -12,63 +12,120 @@ import (
 
 var (
 	consumerTag string
+	conn        *amqp.Connection
 )
 
-func Consume(connectionUri string, deliveries chan interface{}, logger gsmlog.GsmLogger) {
-	defer func() { deliveries <- nil; close(deliveries) }()
+type Consumer struct {
+	Configuration
+	channel     *amqp.Channel
+	conn        *amqp.Connection
+	notifyClose chan *amqp.Error
+	sync.Mutex
+}
 
-	// establish connection
-	conn, err := amqp.Dial(connectionUri)
-	if err != nil {
-		logger.Printf("Error creating connection: %+v\n", err)
-		os.Exit(1)
+func NewConsumer(config Configuration) *Consumer {
+	c := &Consumer{
+		Configuration: config,
 	}
-	defer conn.Close()
-	logger.Println("Connection established")
+	return c
+}
 
-	// open channel
-	channel, err := conn.Channel()
-	if err != nil {
-		logger.Printf("Error opening channel: %+v\n", err)
-		os.Exit(2)
+func (me *Consumer) Consume(deliveries chan interface{}) {
+	if err := me.establishConnection(); err != nil {
+		me.Logger.Println("Error establishing a connection & channel: %+v", err)
+		os.Exit(7)
 	}
 
 	// set qos
 	qosValue := 10 // make configurable?
-	err = channel.Qos(qosValue, 0, false)
+	err := me.channel.Qos(qosValue, 0, false)
 	if err != nil {
-		logger.Printf("Error setting QOS: %+v\n", err)
+		me.Logger.Printf("Error setting QOS: %+v\n", err)
 		os.Exit(3)
 	}
-	logger.Printf("Channel QOS set to %d\n", qosValue)
+	me.Logger.Printf("Channel QOS set to %d\n", qosValue)
 
 	uuidBytes, err := exec.Command("uuidgen").Output()
 	if err != nil {
-		logger.Printf("Error calling uuidgen: %+v\n", err)
+		me.Logger.Printf("Error calling uuidgen: %+v\n", err)
 		os.Exit(4)
 	}
 
 	consumerTag = string(uuidBytes)
 
 	/*
-		  autoAck = false (must manually Ack)
-		  exclusive = true (so we only try to read from one consumer at a time)
-		  noLocal = true (so that if this consumer republishes to the specified
-			queue, it will not pick the message back up)
-		  noWait = true
+		autoAck = false (must manually Ack)
+		exclusive = true (so we only try to read from one consumer at a time)
+		noLocal = true (so that if this consumer republishes to the specified
+		queue, it will not pick the message back up)
+		noWait = true
 	*/
-	consumerChan, err := channel.Consume("firehose", consumerTag, false, true, true, true, nil)
+	consumerChan, err := me.channel.Consume("firehose", consumerTag, false, true, true, true, nil)
 	if err != nil {
-		logger.Printf("Error establishing consume channel: %+v", err)
+		me.Logger.Printf("Error establishing consume channel: %+v", err)
 		os.Exit(5)
 	}
 
-	for {
+	for delivery := range consumerChan {
+		deliveries <- delivery
+	}
+}
+
+func (me *Consumer) establishConnection() (err error) {
+	me.Lock()
+	defer me.Unlock()
+
+	//establish connection
+	if me.conn != nil {
+		return nil
+	}
+	me.conn, err = amqp.Dial(me.ConnectionString)
+	if err != nil {
+		me.Logger.Printf("Error creating connection: %+v\n", err)
+		return err
+	}
+	me.Logger.Println("amqp - connection established")
+
+	// open channel
+	me.channel, err = me.conn.Channel()
+	if err != nil {
+		return err
+	}
+	me.Logger.Println("amqp - channel opened")
+
+	if err = me.channel.Confirm(false); err != nil {
+		return err
+	}
+	me.Logger.Println("amqp - confirm mode set")
+
+	go func() {
+		me.notifyClose = me.channel.NotifyClose(make(chan *amqp.Error))
+
 		select {
-		case delivery := <-consumerChan:
-			deliveries <- delivery
+		case e := <-me.notifyClose:
+			me.Logger.Printf("amqp - The channel opened with RabbitMQ has been closed. %d: %s", e.Code, e.Reason)
+			me.disconnect()
+			if err := me.establishConnection(); err != nil {
+				me.Logger.Println("Error establishing a connection & channel: %+v", err)
+				os.Exit(7)
+			}
 		}
+	}()
+
+	return nil
+}
+
+func (me *Consumer) disconnect() {
+	me.Lock()
+	defer me.Unlock()
+
+	if me.channel != nil {
+		me.channel.Close()
+		me.channel = nil
 	}
 
-	//TODO: handle channel/connection closing
+	if me.conn != nil {
+		me.conn.Close()
+		me.conn = nil
+	}
 }
