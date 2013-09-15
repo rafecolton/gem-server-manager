@@ -37,13 +37,12 @@ func (me *Consumer) Consume(deliveries chan interface{}) {
 	}
 
 	// set qos
-	qosValue := 10 // make configurable?
-	err := me.channel.Qos(qosValue, 0, false)
+	err := me.channel.Qos(me.AmqpQos, 0, false)
 	if err != nil {
 		me.Logger.Printf("Error setting QOS: %+v\n", err)
 		os.Exit(3)
 	}
-	me.Logger.Printf("Channel QOS set to %d\n", qosValue)
+	me.Logger.Printf("Channel QOS set to %d\n", me.AmqpQos)
 
 	uuidBytes, err := exec.Command("uuidgen").Output()
 	if err != nil {

@@ -7,10 +7,11 @@ import (
 )
 
 type Configuration struct {
-	DisplayVersion   bool
-	DisplayRev       bool
-	ExitImmediately  bool
+	AmqpQos          int
 	ConnectionString string
+	DisplayRev       bool
+	DisplayVersion   bool
+	ExitImmediately  bool
 	GemDir           string
 	Logger           gsmlog.GsmLogger
 }
@@ -19,6 +20,7 @@ var (
 	revFlag     = flag.Bool("rev", false, "-rev\t\tPrint git revision and exit.")
 	versionFlag = flag.Bool("version", false, "-version\tPrint version and exit.")
 	uriFlag     = flag.String("uri", "amqp://guest:guest@localhost:5672", "-uri\t\tAMQP uri for consumer.")
+	qosFlag     = flag.Int("qos", 10, "-qos\t\tQOS for the AMQP connection")
 )
 
 func NewConfigurationFromFlags(logger gsmlog.GsmLogger) *Configuration {
@@ -40,10 +42,11 @@ func NewConfigurationFromFlags(logger gsmlog.GsmLogger) *Configuration {
 	}
 
 	return &Configuration{
-		DisplayVersion:   *versionFlag,
-		DisplayRev:       *revFlag,
-		ExitImmediately:  exitImmediately,
+		AmqpQos:          *qosFlag,
 		ConnectionString: *uriFlag,
+		DisplayRev:       *revFlag,
+		DisplayVersion:   *versionFlag,
+		ExitImmediately:  exitImmediately,
 		GemDir:           gemDir,
 		Logger:           logger,
 	}
