@@ -1,7 +1,9 @@
 package gsm
 
 import (
+	"encoding/json"
 	"os"
+	"regexp"
 )
 
 import (
@@ -9,12 +11,45 @@ import (
 	gsmlog "gsm/log"
 )
 
-func Orchestrate(delivery amqp.Delivery, logger gsmlog.GsmLogger) string {
-	body := string(delivery.Body)
-	err := delivery.Ack(false)
-	if err != nil {
-		logger.Printf("Error acking delivery %+v: %+v\n", delivery, err)
-		os.Exit(6)
+type Instructions struct {
+	Rev          string `json:"rev"`
+	RepoPath     string `json:"repo_path"`
+	RepoBasename string `json:"repo_basename"`
+}
+
+func Orchestrate(delivery amqp.Delivery, logger gsmlog.GsmLogger) (*Instructions, error) {
+	defer func() {
+		err := delivery.Ack(false)
+		if err != nil {
+			logger.Printf("Error acking delivery %+v: %+v\n", delivery, err)
+			os.Exit(6)
+		}
+	}()
+
+	var applicationJsonRegex = regexp.MustCompile(`application/json`)
+	var instructions *Instructions
+	var err error
+
+	switch {
+	case applicationJsonRegex.MatchString(delivery.ContentType):
+		instructions, err = parseJson(delivery.Body)
+	default:
+		instructions, err = parseJson(delivery.Body)
 	}
-	return body
+
+	if err != nil {
+		return nil, err
+	}
+
+	return instructions, nil
+}
+
+func parseJson(rawBody []byte) (*Instructions, error) {
+	var ret *Instructions
+	err := json.Unmarshal(rawBody, ret)
+	if err != nil {
+		return nil, err
+	}
+
+	return ret, nil
 }

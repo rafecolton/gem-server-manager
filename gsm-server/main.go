@@ -49,10 +49,16 @@ func main() {
 				done <- true
 			case error:
 				logger.Println("something bad happened")
+			case amqp.Delivery:
+				instructions, err := gsm.Orchestrate(delivery.(amqp.Delivery), logger)
+				if err != nil {
+					logger.Println("Unable to determine instructions from message")
+					logger.Printf("Message body: %s\n", string(delivery.(amqp.Delivery).Body))
+				} else {
+					gsm.ProcessInstructions(instructions)
+				}
 			default:
-				instructions := gsm.Orchestrate(delivery.(amqp.Delivery), logger)
-				gsm.ProcessInstructions(instructions)
-				logger.Printf("raw_instructions: %+v\n", instructions)
+				logger.Println("something bad happened")
 			}
 		}
 	}()
