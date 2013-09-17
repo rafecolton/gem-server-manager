@@ -24,10 +24,9 @@ type Consumer struct {
 }
 
 func NewConsumer(config Configuration) *Consumer {
-	c := &Consumer{
+	return &Consumer{
 		Configuration: config,
 	}
-	return c
 }
 
 func (me *Consumer) Consume(deliveries chan interface{}) {

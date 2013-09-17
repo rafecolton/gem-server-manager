@@ -8,20 +8,30 @@ import (
 
 import (
 	"github.com/streadway/amqp"
-	gsmlog "gsm/log"
 )
 
 type Instructions struct {
-	Rev          string `json:"rev"`
-	RepoPath     string `json:"repo_path"`
-	RepoBasename string `json:"repo_basename"`
+	Rev       string `json:"rev"`
+	RepoName  string `json:"repo_name"`
+	RepoOrg   string `json:"repo_org"`
+	AuthToken string
 }
 
-func Orchestrate(delivery amqp.Delivery, logger gsmlog.GsmLogger) (*Instructions, error) {
+type Orchestrator struct {
+	Configuration
+}
+
+func NewOrchestrator(config Configuration) *Orchestrator {
+	return &Orchestrator{
+		Configuration: config,
+	}
+}
+
+func (me *Orchestrator) Orchestrate(delivery amqp.Delivery) (*Instructions, error) {
 	defer func() {
 		err := delivery.Ack(false)
 		if err != nil {
-			logger.Printf("Error acking delivery %+v: %+v\n", delivery, err)
+			me.Logger.Printf("Error acking delivery %+v: %+v\n", delivery, err)
 			os.Exit(6)
 		}
 	}()
@@ -32,19 +42,21 @@ func Orchestrate(delivery amqp.Delivery, logger gsmlog.GsmLogger) (*Instructions
 
 	switch {
 	case applicationJsonRegex.MatchString(delivery.ContentType):
-		instructions, err = parseJson(delivery.Body)
+		instructions, err = me.parseJson(delivery.Body)
 	default:
-		instructions, err = parseJson(delivery.Body)
+		instructions, err = me.parseJson(delivery.Body)
 	}
 
 	if err != nil {
 		return nil, err
 	}
 
+	instructions.AuthToken = me.AuthToken
+
 	return instructions, nil
 }
 
-func parseJson(rawBody []byte) (*Instructions, error) {
+func (me *Orchestrator) parseJson(rawBody []byte) (*Instructions, error) {
 	var ret *Instructions
 	err := json.Unmarshal(rawBody, ret)
 	if err != nil {

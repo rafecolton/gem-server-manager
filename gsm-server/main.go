@@ -39,6 +39,7 @@ func main() {
 
 	deliveries := make(chan interface{})
 	consumer := gsm.NewConsumer(*config)
+	orc := gsm.NewOrchestrator(*config)
 
 	go consumer.Consume(deliveries)
 
@@ -50,7 +51,7 @@ func main() {
 			case error:
 				logger.Println("something bad happened")
 			case amqp.Delivery:
-				instructions, err := gsm.Orchestrate(delivery.(amqp.Delivery), logger)
+				instructions, err := orc.Orchestrate(delivery.(amqp.Delivery))
 				if err != nil {
 					logger.Println("Unable to determine instructions from message")
 					logger.Printf("Message body: %s\n", string(delivery.(amqp.Delivery).Body))

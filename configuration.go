@@ -8,6 +8,7 @@ import (
 
 type Configuration struct {
 	AmqpQos          int
+	AuthToken        string
 	ConnectionString string
 	DisplayRev       bool
 	DisplayVersion   bool
@@ -25,24 +26,33 @@ var (
 
 func NewConfigurationFromFlags(logger gsmlog.GsmLogger) *Configuration {
 	flag.Usage = func() {
-		fmt.Println("Usage: gsm-server [options] <gemdir>")
+		fmt.Println(`Usage: gsm-server [options] <gemdir> <auth_token>
+
+Required Args:
+gemdir     - the directory in which to place the retrieved gems
+auth_token - the GitHub authorization token
+`)
 		printOptions()
 	}
 	flag.Parse()
 
 	var gemDir string
+	var authToken string
 
 	exitImmediately := *revFlag || *versionFlag
 
-	if flag.NArg() < 1 {
+	if flag.NArg() < 2 {
 		gemDir = ""
+		authToken = ""
 		exitImmediately = true
 	} else {
 		gemDir = flag.Arg(0)
+		authToken = flag.Arg(1)
 	}
 
 	return &Configuration{
 		AmqpQos:          *qosFlag,
+		AuthToken:        authToken,
 		ConnectionString: *uriFlag,
 		DisplayRev:       *revFlag,
 		DisplayVersion:   *versionFlag,
