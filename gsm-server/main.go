@@ -22,8 +22,8 @@ func init() {
 }
 
 func main() {
-	config := gsm.NewConfigurationFromFlags(logger)
 	logger.Initialize()
+	config := gsm.NewConfigurationFromFlags(logger)
 
 	if config.DisplayVersion {
 		fmt.Println(gsm.ProgVersion())
