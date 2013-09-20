@@ -14,7 +14,9 @@ type Configuration struct {
 	DisplayVersion   bool
 	ExitImmediately  bool
 	GemDir           string
+	GibHost          string
 	Logger           gsmlog.GsmLogger
+	ScriptLoc        string
 }
 
 var (
@@ -22,6 +24,14 @@ var (
 	versionFlag = flag.Bool("version", false, "-version\tPrint version and exit.")
 	uriFlag     = flag.String("uri", "amqp://guest:guest@localhost:5672", "-uri\t\tAMQP uri for consumer.")
 	qosFlag     = flag.Int("qos", 10, "-qos\t\tQOS for the AMQP connection")
+	scriptLoc = flag.String("script", "/tmp/retrieve-gems", fmt.Sprintf(
+		"-script\t\t%s %s",
+		"Location for gem-retrieval script",
+		"Default: /tmp/retrieve-gems"))
+	gibHost = flag.String("gibhost", "http://localhost:9292/", fmt.Sprintf(
+		"-gibhost\t\t%s %s",
+		"Geminabox host",
+		"Default: http://localhost:9292/"))
 )
 
 func NewConfigurationFromFlags(logger gsmlog.GsmLogger) *Configuration {
@@ -58,7 +68,9 @@ auth_token - the GitHub authorization token
 		DisplayVersion:   *versionFlag,
 		ExitImmediately:  exitImmediately,
 		GemDir:           gemDir,
+		GibHost:          *gibHost,
 		Logger:           logger,
+		ScriptLoc:        *scriptLoc,
 	}
 }
 

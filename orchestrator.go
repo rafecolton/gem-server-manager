@@ -15,7 +15,7 @@ var ApplicationJsonRegex = regexp.MustCompile(`^application/json`)
 type Instructions struct {
 	Rev       string `json:"rev"`
 	RepoName  string `json:"repo_name"`
-	RepoOrg   string `json:"repo_org"`
+	RepoOwner string `json:"repo_owner"`
 	AuthToken string
 }
 

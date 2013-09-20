@@ -40,13 +40,14 @@ func main() {
 	deliveries := make(chan interface{})
 	consumer := gsm.NewConsumer(*config)
 	orc := gsm.NewOrchestrator(*config)
+	be := gsm.NewBundleExecer(*config)
 
 	go consumer.Consume(deliveries)
 
 	for delivery := range deliveries {
 		switch delivery.(type) {
 		case nil:
-		  return
+			return
 		case error:
 			logger.Println("something bad happened - error delivery type")
 		case amqp.Delivery:
@@ -55,7 +56,7 @@ func main() {
 				logger.Println("Unable to determine instructions from message")
 				logger.Printf("Message body: %s\n", string(delivery.(amqp.Delivery).Body))
 			} else {
-				go gsm.ProcessInstructions(instructions)
+				go be.ProcessInstructions(instructions)
 			}
 		default:
 			logger.Println("something bad happened - unexpected delivery type")

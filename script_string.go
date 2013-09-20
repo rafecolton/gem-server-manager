@@ -1,4 +1,6 @@
-#!/usr/bin/env bash
+package gsm
+
+const SCRIPT_STRING = `#!/usr/bin/env bash
 
 usage() {
   cat <<EOB
@@ -81,4 +83,4 @@ _get_file() {
 
 export TMP_DIR="$(mktemp -d -t 'XXXXXXXXXX')"
 trap "rm -rf $TMP_DIR" EXIT SIGINT SIGTERM
-main "$@"
+main "$@"`
