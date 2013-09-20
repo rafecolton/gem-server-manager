@@ -20,5 +20,6 @@ the message body to be a JSON payload that looks something like this:
 ```
 
 It then users a GitHub API key to pull down the raw `Gemfile` and
-`Gemfile.lock` from your repo.  It then runs `bundle install`, using
-some args (TBD) to place the install gems into your GEMDIR.
+`Gemfile.lock` from your repo.  It then pulls down your gems from
+Rubygems and uploads them to your
+[geminabox](https://github.com/geminabox/geminabox) server.
