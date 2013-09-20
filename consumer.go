@@ -105,7 +105,7 @@ func (me *Consumer) establishConnection() (err error) {
 			me.disconnect()
 			if err := me.establishConnection(); err != nil {
 				me.Logger.Println("Error establishing a connection & channel: %+v", err)
-				os.Exit(7)
+				os.Exit(11)
 			}
 		}
 	}()

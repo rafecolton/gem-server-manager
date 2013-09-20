@@ -22,8 +22,11 @@ type Configuration struct {
 var (
 	revFlag     = flag.Bool("rev", false, "-rev\t\tPrint git revision and exit.")
 	versionFlag = flag.Bool("version", false, "-version\tPrint version and exit.")
-	uriFlag     = flag.String("uri", "amqp://guest:guest@localhost:5672", "-uri\t\tAMQP uri for consumer.")
-	qosFlag     = flag.Int("qos", 10, "-qos\t\tQOS for the AMQP connection")
+	uriFlag     = flag.String("uri", "amqp://guest:guest@localhost:5672", fmt.Sprintf(
+		"-uri\t\t%s %s",
+		"AMQP uri for consumer.",
+		"Default: amqp://guest:guest@localhost:5672/"))
+	qosFlag   = flag.Int("qos", 10, "-qos\t\tQOS for the AMQP connection. Default: 10.")
 	scriptLoc = flag.String("script", "/tmp/retrieve-gems", fmt.Sprintf(
 		"-script\t\t%s %s",
 		"Location for gem-retrieval script",
