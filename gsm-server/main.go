@@ -56,7 +56,7 @@ func main() {
 					logger.Println("Unable to determine instructions from message")
 					logger.Printf("Message body: %s\n", string(delivery.(amqp.Delivery).Body))
 				} else {
-					gsm.ProcessInstructions(instructions)
+					go gsm.ProcessInstructions(instructions)
 				}
 			default:
 				logger.Println("something bad happened")
