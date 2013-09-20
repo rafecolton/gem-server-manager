@@ -12,7 +12,11 @@ The Gem Library Updater (GLU) consumes from an AMQP queue.  It expects
 the message body to be a JSON payload that looks something like this:
 
 ```json
-//TODO: fill this in
+{
+  "rev": "master",
+  "repo_name": "gem-server-manager",
+  "repo_owner": "rafecolton"
+}
 ```
 
 It then users a GitHub API key to pull down the raw `Gemfile` and
