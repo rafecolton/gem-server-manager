@@ -43,26 +43,22 @@ func main() {
 
 	go consumer.Consume(deliveries)
 
-	go func() {
-		for delivery := range deliveries {
-			switch delivery.(type) {
-			case nil:
-				done <- true
-			case error:
-				logger.Println("something bad happened")
-			case amqp.Delivery:
-				instructions, err := orc.Orchestrate(delivery.(amqp.Delivery))
-				if err != nil {
-					logger.Println("Unable to determine instructions from message")
-					logger.Printf("Message body: %s\n", string(delivery.(amqp.Delivery).Body))
-				} else {
-					go gsm.ProcessInstructions(instructions)
-				}
-			default:
-				logger.Println("something bad happened")
+	for delivery := range deliveries {
+		switch delivery.(type) {
+		case nil:
+			done <- true
+		case error:
+			logger.Println("something bad happened")
+		case amqp.Delivery:
+			instructions, err := orc.Orchestrate(delivery.(amqp.Delivery))
+			if err != nil {
+				logger.Println("Unable to determine instructions from message")
+				logger.Printf("Message body: %s\n", string(delivery.(amqp.Delivery).Body))
+			} else {
+				go gsm.ProcessInstructions(instructions)
 			}
+		default:
+			logger.Println("something bad happened")
 		}
-	}()
-
-	<-done
+	}
 }
