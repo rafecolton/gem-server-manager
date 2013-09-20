@@ -46,9 +46,9 @@ func main() {
 	for delivery := range deliveries {
 		switch delivery.(type) {
 		case nil:
-			done <- true
+		  return
 		case error:
-			logger.Println("something bad happened")
+			logger.Println("something bad happened - error delivery type")
 		case amqp.Delivery:
 			instructions, err := orc.Orchestrate(delivery.(amqp.Delivery))
 			if err != nil {
@@ -58,7 +58,7 @@ func main() {
 				go gsm.ProcessInstructions(instructions)
 			}
 		default:
-			logger.Println("something bad happened")
+			logger.Println("something bad happened - unexpected delivery type")
 		}
 	}
 }
