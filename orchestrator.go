@@ -10,6 +10,8 @@ import (
 	"github.com/streadway/amqp"
 )
 
+var ApplicationJsonRegex = regexp.MustCompile(`^application/json`)
+
 type Instructions struct {
 	Rev       string `json:"rev"`
 	RepoName  string `json:"repo_name"`
@@ -36,12 +38,11 @@ func (me *Orchestrator) Orchestrate(delivery amqp.Delivery) (*Instructions, erro
 		}
 	}()
 
-	var applicationJsonRegex = regexp.MustCompile(`application/json`)
 	var instructions *Instructions
 	var err error
 
 	switch {
-	case applicationJsonRegex.MatchString(delivery.ContentType):
+	case ApplicationJsonRegex.MatchString(delivery.ContentType):
 		instructions, err = me.parseJson(delivery.Body)
 	default:
 		instructions, err = me.parseJson(delivery.Body)
