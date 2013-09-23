@@ -67,9 +67,12 @@ auth_token - the GitHub authorization token
 	exitImmediately := *revFlag || *versionFlag
 
 	if flag.NArg() < 2 {
+		if !exitImmediately {
+			flag.Usage()
+			exitImmediately = true
+		}
 		gemDir = ""
 		authToken = ""
-		exitImmediately = true
 	} else {
 		gemDir = flag.Arg(0)
 		authToken = flag.Arg(1)

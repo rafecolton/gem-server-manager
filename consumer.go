@@ -53,24 +53,30 @@ func (me *Consumer) Consume(deliveries chan interface{}) {
 
 	err = me.channel.ExchangeDeclare(me.Exchange, "topic", true, false, false, true, nil)
 	if err != nil {
-		me.Logger.Printf("amqp - Error declaring exchange %s\n", me.Exchange)
+		me.Logger.Printf("amqp - Error declaring exchange '%s'\n", me.Exchange)
 		os.Exit(13)
 	}
+	me.Logger.Printf("amqp - Exchange '%s' declared\n", me.Exchange)
 
 	_, err = me.channel.QueueDeclare(me.Queue, true, false, false, true, nil)
 	if err != nil {
-		me.Logger.Printf("amqp - Error declaring queue %s\n", me.Queue)
+		me.Logger.Printf("amqp - Error declaring queue '%s'\n", me.Queue)
 		os.Exit(17)
 	}
+	me.Logger.Printf("amqp - Queue '%s' declared\n", me.Queue)
 
 	err = me.channel.QueueBind(me.Queue, me.Binding, me.Exchange, true, nil)
 	if err != nil {
-		me.Logger.Printf("amqp - Error binding queue %s to exchange %s using binding %s\n",
+		me.Logger.Printf("amqp - Error binding queue '%s' to exchange '%s' using binding '%s'\n",
 			me.Queue,
 			me.Exchange,
 			me.Binding)
 		os.Exit(19)
 	}
+	me.Logger.Printf("amqp - Queue '%s' bound to exchange '%s' using binding '%s'\n",
+		me.Queue,
+		me.Exchange,
+		me.Binding)
 
 	/*
 		autoAck = false (must manually Ack)

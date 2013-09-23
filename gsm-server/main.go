@@ -38,6 +38,7 @@ func main() {
 	orc := gsm.NewOrchestrator(*config)
 	be := gsm.NewBundleExecer(*config)
 
+	logger.Println("main - starting Consumer")
 	go consumer.Consume(deliveries)
 
 	for delivery := range deliveries {
