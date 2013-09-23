@@ -31,21 +31,21 @@ func NewConsumer(config Configuration) *Consumer {
 
 func (me *Consumer) Consume(deliveries chan interface{}) {
 	if err := me.establishConnection(); err != nil {
-		me.Logger.Println("Error establishing a connection & channel: %+v", err)
+		me.Logger.Println("amqp - Error establishing a connection & channel: %+v", err)
 		os.Exit(7)
 	}
 
 	// set qos
 	err := me.channel.Qos(me.AmqpQos, 0, false)
 	if err != nil {
-		me.Logger.Printf("Error setting QOS: %+v\n", err)
+		me.Logger.Printf("amqp - Error setting QOS: %+v\n", err)
 		os.Exit(3)
 	}
-	me.Logger.Printf("Channel QOS set to %d\n", me.AmqpQos)
+	me.Logger.Printf("amqp - Channel QOS set to %d\n", me.AmqpQos)
 
 	uuidBytes, err := exec.Command("uuidgen").Output()
 	if err != nil {
-		me.Logger.Printf("Error calling uuidgen: %+v\n", err)
+		me.Logger.Printf("amqp - Error calling uuidgen: %+v\n", err)
 		os.Exit(4)
 	}
 
@@ -60,7 +60,7 @@ func (me *Consumer) Consume(deliveries chan interface{}) {
 	*/
 	consumerChan, err := me.channel.Consume("firehose", consumerTag, false, true, true, true, nil)
 	if err != nil {
-		me.Logger.Printf("Error establishing consume channel: %+v", err)
+		me.Logger.Printf("amqp - Error establishing consume channel: %+v", err)
 		os.Exit(5)
 	}
 
@@ -79,7 +79,7 @@ func (me *Consumer) establishConnection() (err error) {
 	}
 	me.conn, err = amqp.Dial(me.ConnectionString)
 	if err != nil {
-		me.Logger.Printf("Error creating connection: %+v\n", err)
+		me.Logger.Printf("amqp - Error creating connection: %+v\n", err)
 		return err
 	}
 	me.Logger.Println("amqp - connection established")
@@ -104,7 +104,7 @@ func (me *Consumer) establishConnection() (err error) {
 			me.Logger.Printf("amqp - The channel opened with RabbitMQ has been closed. %d: %s", e.Code, e.Reason)
 			me.disconnect()
 			if err := me.establishConnection(); err != nil {
-				me.Logger.Println("Error establishing a connection & channel: %+v", err)
+				me.Logger.Println("amqp - Error establishing a connection & channel: %+v", err)
 				os.Exit(11)
 			}
 		}

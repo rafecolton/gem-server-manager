@@ -33,7 +33,7 @@ func (me *Orchestrator) Orchestrate(delivery amqp.Delivery) (*Instructions, erro
 	defer func() {
 		err := delivery.Ack(false)
 		if err != nil {
-			me.Logger.Printf("Error acking delivery %+v: %+v\n", delivery, err)
+			me.Logger.Printf("amqp - Error acking delivery %+v: %+v\n", delivery, err)
 			os.Exit(6)
 		}
 	}()

@@ -49,17 +49,17 @@ func main() {
 		case nil:
 			return
 		case error:
-			logger.Println("something bad happened - error delivery type")
+			logger.Println("main - something bad happened - error delivery type")
 		case amqp.Delivery:
 			instructions, err := orc.Orchestrate(delivery.(amqp.Delivery))
 			if err != nil {
-				logger.Println("Unable to determine instructions from message")
-				logger.Printf("Message body: %s\n", string(delivery.(amqp.Delivery).Body))
+				logger.Println("main - Unable to determine instructions from message")
+				logger.Printf("main - Message body: %s\n", string(delivery.(amqp.Delivery).Body))
 			} else {
 				go be.ProcessInstructions(instructions)
 			}
 		default:
-			logger.Println("something bad happened - unexpected delivery type")
+			logger.Println("main - something bad happened - unexpected delivery type")
 		}
 	}
 }

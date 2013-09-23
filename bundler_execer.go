@@ -31,12 +31,12 @@ func (me *BundleExecer) ProcessInstructions(instructions *Instructions) {
 	} else if os.IsNotExist(err) {
 		err_w = me.writeScript()
 	} else {
-		me.Logger.Printf("Error detecting script file %s\n", me.ScriptLoc)
+		me.Logger.Printf("os - Error detecting script file %s\n", me.ScriptLoc)
 		os.Exit(13)
 	}
 
 	if err_w != nil {
-		me.Logger.Print("Error writing script %s\n", me.ScriptLoc)
+		me.Logger.Print("os - Error writing script %s\n", me.ScriptLoc)
 		os.Exit(17)
 	}
 	me.Unlock()
@@ -53,10 +53,10 @@ func (me *BundleExecer) ProcessInstructions(instructions *Instructions) {
 
 	if err != nil {
 		if msg, ok := err.(*exec.ExitError); ok {
-			me.Logger.Printf("Error running retrieve-gems, exited %d\n",
+			me.Logger.Printf("os - Error running retrieve-gems, exited %d\n",
 				msg.Sys().(syscall.WaitStatus).ExitStatus())
 		} else {
-			me.Logger.Printf("Error running retrieve-gems script: %+v\n", err)
+			me.Logger.Printf("os - Error running retrieve-gems script: %+v\n", err)
 		}
 	}
 }
@@ -65,13 +65,13 @@ func (me *BundleExecer) writeScript() error {
 	file, err := os.OpenFile(me.ScriptLoc, os.O_CREATE|os.O_WRONLY, 0755)
 	defer file.Close()
 	if err != nil {
-		me.Logger.Println("Error opening script file for writing")
+		me.Logger.Println("os - Error opening script file for writing")
 		return err
 	}
 
 	_, err = file.WriteString(SCRIPT_STRING)
 	if err != nil {
-		me.Logger.Println("Error writing to script file")
+		me.Logger.Println("os - Error writing to script file")
 		return err
 	}
 
