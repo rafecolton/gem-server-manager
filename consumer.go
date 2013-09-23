@@ -58,7 +58,7 @@ func (me *Consumer) Consume(deliveries chan interface{}) {
 		queue, it will not pick the message back up)
 		noWait = true
 	*/
-	consumerChan, err := me.channel.Consume("firehose", consumerTag, false, true, true, true, nil)
+	consumerChan, err := me.channel.Consume(me.Queue, consumerTag, false, true, true, true, nil)
 	if err != nil {
 		me.Logger.Printf("amqp - Error establishing consume channel: %+v", err)
 		os.Exit(5)

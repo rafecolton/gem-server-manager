@@ -16,6 +16,7 @@ type Configuration struct {
 	GemDir           string
 	GibHost          string
 	Logger           gsmlog.GsmLogger
+	Queue            string
 	ScriptLoc        string
 }
 
@@ -27,6 +28,7 @@ var (
 		"AMQP uri for consumer.",
 		"Default: amqp://guest:guest@localhost:5672/"))
 	qosFlag   = flag.Int("qos", 10, "-qos\t\tQOS for the AMQP connection. Default: 10.")
+	queue     = flag.String("queue", "firehose", "-queue\t\tAMQP queue from which to consume. Default: firehose")
 	scriptLoc = flag.String("script", "/tmp/retrieve-gems", fmt.Sprintf(
 		"-script\t\t%s %s",
 		"Location for gem-retrieval script",
@@ -73,6 +75,7 @@ auth_token - the GitHub authorization token
 		GemDir:           gemDir,
 		GibHost:          *gibHost,
 		Logger:           logger,
+		Queue:            *queue,
 		ScriptLoc:        *scriptLoc,
 	}
 }
