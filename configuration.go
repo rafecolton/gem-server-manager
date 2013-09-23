@@ -41,9 +41,14 @@ var (
 		"-gibhost\t%s %s",
 		"Geminabox host",
 		"Default: http://localhost:9292/"))
+	logger gsmlog.GsmLogger
 )
 
-func NewConfigurationFromFlags(logger gsmlog.GsmLogger) *Configuration {
+func init() {
+	flag.Var(&logger, "verbose", "-verbose\tUse verbose output.")
+}
+
+func NewConfigurationFromFlags() *Configuration {
 	flag.Usage = func() {
 		fmt.Println(`Usage: gsm-server [options] <gemdir> <auth_token>
 
@@ -54,6 +59,7 @@ auth_token - the GitHub authorization token
 		printOptions()
 	}
 	flag.Parse()
+	logger.Initialize()
 
 	var gemDir string
 	var authToken string

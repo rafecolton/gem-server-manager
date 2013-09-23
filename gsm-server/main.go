@@ -1,7 +1,6 @@
 package main
 
 import (
-	"flag"
 	"fmt"
 	"gsm"
 	gsmlog "gsm/log"
@@ -18,13 +17,9 @@ var (
 	processError error
 )
 
-func init() {
-	flag.Var(&logger, "v", "-v\t\tUse verbose output.")
-}
-
 func main() {
-	logger.Initialize()
-	config := gsm.NewConfigurationFromFlags(logger)
+	config := gsm.NewConfigurationFromFlags()
+	logger = config.Logger
 
 	if config.DisplayVersion {
 		fmt.Println(gsm.ProgVersion())
