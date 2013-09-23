@@ -19,25 +19,25 @@ func NewBundleExecer(config Configuration) *BundleExecer {
 	}
 }
 
-func (me *BundleExecer) ProcessInstructions(instructions *Instructions) {
-	var err_w error
+func (me *BundleExecer) ProcessInstructions(instructions *Instructions) error {
+	var errW error
 
 	me.Lock()
 	stat, err := os.Stat(me.ScriptLoc)
 	if err == nil {
 		if stat.Size() <= 0 || (stat.Mode()&0111) != 0 {
-			err_w = me.writeScript()
+			errW = me.writeScript()
 		}
 	} else if os.IsNotExist(err) {
-		err_w = me.writeScript()
+		errW = me.writeScript()
 	} else {
 		me.Logger.Printf("os - Error detecting script file %s\n", me.ScriptLoc)
-		os.Exit(13)
+		return errW
 	}
 
-	if err_w != nil {
+	if errW != nil {
 		me.Logger.Print("os - Error writing script %s\n", me.ScriptLoc)
-		os.Exit(17)
+		return errW
 	}
 	me.Unlock()
 
@@ -54,11 +54,14 @@ func (me *BundleExecer) ProcessInstructions(instructions *Instructions) {
 	if err != nil {
 		if msg, ok := err.(*exec.ExitError); ok {
 			me.Logger.Printf("os - Error running retrieve-gems, exited %d\n",
+				// Do not return error, instructions probably pertained to non-Ruby project.
 				msg.Sys().(syscall.WaitStatus).ExitStatus())
 		} else {
 			me.Logger.Printf("os - Error running retrieve-gems script: %+v\n", err)
+			return err
 		}
 	}
+	return nil
 }
 
 func (me *BundleExecer) writeScript() error {
@@ -74,6 +77,5 @@ func (me *BundleExecer) writeScript() error {
 		me.Logger.Println("os - Error writing to script file")
 		return err
 	}
-
 	return nil
 }

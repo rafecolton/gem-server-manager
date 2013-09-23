@@ -13,8 +13,9 @@ import (
 )
 
 var (
-	done   = make(chan bool)
-	logger gsmlog.GsmLogger
+	done         = make(chan bool)
+	logger       gsmlog.GsmLogger
+	processError error
 )
 
 func init() {
@@ -56,7 +57,18 @@ func main() {
 				logger.Println("main - Unable to determine instructions from message")
 				logger.Printf("main - Message body: %s\n", string(delivery.(amqp.Delivery).Body))
 			} else {
-				go be.ProcessInstructions(instructions)
+				go func() {
+					err = be.ProcessInstructions(instructions)
+					if err != nil {
+						if processError != nil {
+							logger.Println("main - Message processing erred twice in a row, something is probably wrong.")
+							os.Exit(86)
+						}
+						processError = err
+					} else {
+						processError = nil
+					}
+				}()
 			}
 		default:
 			logger.Println("main - something bad happened - unexpected delivery type")

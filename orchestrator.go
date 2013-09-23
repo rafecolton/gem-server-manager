@@ -2,7 +2,6 @@ package gsm
 
 import (
 	"encoding/json"
-	"os"
 	"regexp"
 )
 
@@ -33,8 +32,8 @@ func (me *Orchestrator) Orchestrate(delivery amqp.Delivery) (*Instructions, erro
 	defer func() {
 		err := delivery.Ack(false)
 		if err != nil {
+			// If this fails, and I don't exit, will I leak memory?
 			me.Logger.Printf("amqp - Error acking delivery %+v: %+v\n", delivery, err)
-			os.Exit(6)
 		}
 	}()
 
