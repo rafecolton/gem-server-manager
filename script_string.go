@@ -27,7 +27,8 @@ main() {
       ;;
   esac
   validate_env
-  download_gemfile
+  download_file 'Gemfile' 'fail_if_not_found'
+  download_file 'Gemfile.lock' 'do_not_fail_if_not_found'
   bundle_exec
   put_things_inabox
 }
@@ -47,16 +48,22 @@ validate_env() {
   fi
 }
 
-download_gemfile() {
-  for file in 'Gemfile' 'Gemfile.lock' ; do
-    result="$(_get_file "$file")"
-    if echo "$results" | json -a message | grep -q -i 'not found' ; then
-      echo "Could not locate $file"
-      exit 5
-    else
-      echo "$results" | json -a content | base64 --decode > "$TMP_DIR/$file"
-    fi
-  done
+download_file() {
+  filename="$1"
+  fail="$2"
+  result="$(_get_file "$filename")"
+  if echo "$results" | json -a message | grep -q -i 'not found' ; then
+	echo "Could not locate $file"
+	if [[ "$fail" == 'fail_if_not_found' ]] ; then exit 5 ; fi
+  else
+	echo "$results" | json -a content | base64 --decode > "$TMP_DIR/$file"
+  fi
+}
+
+_get_file() {
+  file_path="$1"
+  curl -s -XGET -H "Authorization: token $AUTH_TOKEN" \
+    "https://api.github.com/repos/$OWNER/$REPO/contents/$file_path"
 }
 
 bundle_exec() {
@@ -73,12 +80,6 @@ put_things_inabox() {
   ); do
 	[[ -s "$filename" ]] && gem inabox "$filename"
   done
-}
-
-_get_file() {
-  file_path="$1"
-  curl -s -XGET -H "Authorization: token $AUTH_TOKEN" \
-    "https://api.github.com/repos/$OWNER/$REPO/contents/$file_path"
 }
 
 export TMP_DIR="$(mktemp -d -t 'XXXXXXXXXX')"
